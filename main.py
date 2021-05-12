@@ -10,6 +10,12 @@ from flask import Flask, request, send_file, Response
 
 app = Flask(__name__)
 
+@app.route('/rss', methods=['GET'])
+def return_Rss_File():
+    renderTxt = "rss"
+    return renderTxt
+
+# Torrents items block for xml
 def get_Torrent_Item(data):
     item = et.Element("item")
     title = et.SubElement(item, "title")
@@ -20,8 +26,10 @@ def get_Torrent_Item(data):
     size = et.SubElement(item, "size")
     return item
 
+# Simule api data
 apiData = [ {}, {}, {} ]
 
+# Create xml file with the api info.
 rss = et.Element("rss")
 channel = et.SubElement(rss, "channel")
 title = et.SubElement(channel, "title")
