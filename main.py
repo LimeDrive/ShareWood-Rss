@@ -7,13 +7,15 @@
 
 from lxml import etree as et
 from flask import Flask, request, send_file, Response
+import os
 
+passkey = os.environ.get("SHAREWOOD_PASSKEY")
 app = Flask(__name__)
 
 # Torrents items block for xml TODO
 
 
-def get_Torrent_Item(data):
+def get_Torrent_Item(data, passkey):
     item = et.Element("item")
     title = et.SubElement(item, "title")
     descrition = et.SubElement(item, "description")
@@ -26,7 +28,7 @@ def get_Torrent_Item(data):
 # Create xml file with the api info. TODO
 
 
-def prase_Xml_file(apiData):
+def prase_Xml_file(apiData, passkey):
     rss = et.Element("rss")
     channel = et.SubElement(rss, "channel")
     title = et.SubElement(channel, "title")
@@ -41,7 +43,7 @@ def prase_Xml_file(apiData):
 
 
 @app.route('/rss', methods=['GET'])
-def return_Rss_File():
+def return_Rss_File(passkey):
     # Simule api data
     apiData = [{}, {}, {}]
     renderTxt = prase_Xml_file(apiData)
