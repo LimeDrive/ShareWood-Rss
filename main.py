@@ -12,41 +12,54 @@
 
 from lxml import etree as et
 from flask import Flask, request, abort
-from markupsafe import escape
+# from markupsafe import escape
 import requests
 import os
 import time
+import yaml
 
 passkey = os.environ.get("SHAREWOOD_PASSKEY")
 app = Flask(__name__)
 
-# Torrents items block for xml TODO
-
-
-def get_Torrent_Item(data, passkey):
-    item = et.Element("item")
-    title = et.SubElement(item, "title")
-    descrition = et.SubElement(item, "description")
-    link = et.SubElement(item, "link")
-    dllLink = et.SubElement(item, "dllLink")
-    category = et.SubElement(item, "category")
-    size = et.SubElement(item, "size")
-    return item
-
 # Create xml file with the api info. TODO
 
 
-def prase_Xml_file(apiData, passkey):
-    rss = et.Element("rss")
+def prase_Xml_file(apiData, passkey, category, subcategory, name):
+    # For correct title.
+    with open('config.yml', 'r') as ymlfile:
+        cfgTitle = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    titleDict = dict()
+    titleDict = cfgTitle['title']
+    keyTitleDict = str(category) if category is True else str(
+        subcategory) if subcategory is True else str(0)
+    
+    rss = et.Element("rss", version="2.0")
     channel = et.SubElement(rss, "channel")
     title = et.SubElement(channel, "title")
+    if not name: 
+        title.text = f"ShareWood RSS : {titleDict.get(keyTitleDict)}"
+    else:
+        title.txt = f"ShareWood Search : {str(name)}"
     description = et.SubElement(channel, "description")
+    description.text = "Flux RSS Sharewood"
     lastBuildDate = et.SubElement(channel, "lastBuildDate")
     lastBuildDate.text = str(time.ctime)
     link = et.SubElement(channel, "link")
+    link.text = "https://sharewood.tv"
     for torrent in apiData:
-        channel.append(et.Comment("News Torrents Items"))
-        channel.append(get_Torrent_Item(torrent))
+        et.Comment("News Torrents Item")
+        item = et.subElement(channel, "item")
+        title = et.SubElement(item, "title")
+        title.text = str(torrent.get('name'))
+        descrition = et.SubElement(item, "description")
+        descrition.text = str(torrent.get('slug'))
+        link = et.SubElement(item, "link")
+        link.text = f"https://sharewood.tv/torrents/{str(torrent.get('slug'))}.{str(torrent.get('id'))}"
+        size = et.SubElement(item, "size")
+        size.text = str(torrent.get('size'))
+        url = f"https://www.sharewood.tv/api/{str(passkey)}/{str(torrent.get('id'))}/download"
+        et.SubElement(item, "enclosure", url=url, type="application/x-bittorrent")
+
 
     return et.tostring(rss, pretty_print=True, encoding='utf-8', xml_declaration=True)
 
@@ -84,7 +97,7 @@ def return_Rss_File(apiAction):
     if name:
         arguments['name'] = str(name)
 
-    
+
     if apiAction == 'last-torrents':
         url = requests.get(f"https://www.sharewood.tv/api/{passkey}/last-torrents", params=arguments)
         print(url.url)
@@ -96,9 +109,10 @@ def return_Rss_File(apiAction):
             apiData = url.json()
         else:
             return abort(404)
+    else:
+        return abort(404)
 
-    # return str(apiData)
-    renderTxt = prase_Xml_file(apiData)
+    renderTxt = prase_Xml_file(apiData, passkey, category, subcategory, name)
     return renderTxt
 
 # print(et.tostring(rss, pretty_print=True, encoding='utf-8', xml_declaration=True))
