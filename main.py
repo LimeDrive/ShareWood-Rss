@@ -47,7 +47,7 @@ def prase_Xml_file(apiData, passkey, category, subcategory, name):
     link = et.SubElement(channel, "link")
     link.text = "https://sharewood.tv"
     for torrent in apiData:
-        et.Comment("News Torrents Item")
+        channel.append(et.Comment("News Torrents Item"))
         item = et.SubElement(channel, "item")
         title = et.SubElement(item, "title")
         title.text = str(torrent.get('name'))
