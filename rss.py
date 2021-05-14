@@ -16,6 +16,10 @@ import humanize
 
 app = Flask(__name__)
 
+@app.route('/')
+def how_to():
+    return '<strong>Exemples :</strong><br>http://localhost:4000/rss/PASSKEY/last-torrents?category=1&limit=10<br>http://localhost:4000/rss/PASSKEY/last-torrents?subcategory=6&limit=10<br>http://localhost:4000/rss/PASSKEY/search?name=watchmen&subcategory=9&limit=10'
+
 @app.route('/rss/<string:passkey>/<string:apiAction>', methods=['GET'])
 def return_Rss_File(passkey, apiAction):
 
