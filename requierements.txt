@@ -4,3 +4,7 @@ humanize==3.5.0
 lxml==4.6.3
 PyYAML==5.4.1
 requests==2.25.1
+gevent==21.1.2
+zope.event==4.5.0
+zope.interface==5.4.0
+greenlet==1.1.0
