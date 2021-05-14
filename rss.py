@@ -16,7 +16,6 @@ import humanize
 
 app = Flask(__name__)
 
-
 @app.route('/rss/<string:passkey>/<string:apiAction>', methods=['GET'])
 def return_Rss_File(passkey, apiAction):
 
@@ -56,13 +55,11 @@ def return_Rss_File(passkey, apiAction):
     if apiAction == 'last-torrents':
         url = requests.get(
             f"https://www.sharewood.tv/api/{passkey}/last-torrents", params=arguments)
-        print(url.url)
         apiData = url.json()
     elif apiAction == "search":
         if name:
             url = requests.get(
                 f"https://www.sharewood.tv/api/{passkey}/search", params=arguments)
-            print(url.url)
             apiData = url.json()
         else:
             return abort(404)
@@ -110,11 +107,10 @@ def return_Rss_File(passkey, apiAction):
         size.text = sizeTorrent
         url = f"https://www.sharewood.tv/api/{str(passkey)}/{str(torrent.get('id'))}/download"
         et.SubElement(item, "enclosure", url=url,
-                      type="application/x-bittorrent")
+                    type="application/x-bittorrent")
 
-    print(et.tostring(rss))
     txt = et.tostring(rss, pretty_print=True,
-                      encoding='utf-8', xml_declaration=True)
+                    encoding='utf-8', xml_declaration=True)
 
     return Response(txt, mimetype='text/xml')
 

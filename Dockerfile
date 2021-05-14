@@ -1,14 +1,15 @@
 FROM python:3.9-slim-buster
 
 WORKDIR /rss
+
 ENV TZ=Europe/Paris
 
-RUN pip install --upgrade pip && pip install flask PyYAML torrentool
+COPY requierements.txt requierements.txt
+RUN pip install --upgrade pip && pip install -r requierements.txt
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 4000
 
-ENTRYPOINT [ "python" ]
-
-CMD [ "main.py" ]
+ENTRYPOINT [ "gunicorn" ]
+CMD [ "__init__:app", "-b", "0.0.0.0:4000", "-w", "4" ]
