@@ -22,7 +22,7 @@ titleDict = cfgTitle['title']
 
 app = Flask(__name__)
 
-@retry(ValueError, delay=1, jitter=2, tries=4)
+@retry((ValueError, TypeError), delay=1, jitter=2, tries=4)
 def get_Json_Api(arguments, url):
     response = requests.get(url, params=arguments)
     if not response.ok:
