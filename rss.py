@@ -8,13 +8,27 @@
 
 from lxml import etree as et
 from flask import Flask, request, abort, Response
+from retry import retry
 # from markupsafe import escape
 import requests
 import time
 import yaml
 import humanize
 
+with open('config.yml', 'r') as ymlfile:
+    cfgTitle = yaml.load(ymlfile, Loader=yaml.FullLoader)
+
+titleDict = cfgTitle['title']
+
 app = Flask(__name__)
+
+@retry(ValueError, delay=1, jitter=2, tries=4)
+def get_Json_Api(arguments, url):
+    response = requests.get(url, params=arguments)
+    if not response.ok:
+        return ValueError
+    return response.json()
+
 
 @app.route('/')
 def how_to():
@@ -57,22 +71,13 @@ def return_Rss_File(passkey, apiAction):
         arguments['name'] = str(name)
 
     if apiAction == 'last-torrents':
-        url = requests.get(
-            f"https://www.sharewood.tv/api/{passkey}/last-torrents", params=arguments)
-        apiData = url.json()
+        url = f"https://www.sharewood.tv/api/{passkey}/last-torrents"
     elif apiAction == "search":
         if name:
-            url = requests.get(
-                f"https://www.sharewood.tv/api/{passkey}/search", params=arguments)
-            apiData = url.json()
-        else:
-            return abort(404)
+            url = f"https://www.sharewood.tv/api/{passkey}/search"
     else:
         return abort(404)
 
-    with open('config.yml', 'r') as ymlfile:
-        cfgTitle = yaml.load(ymlfile, Loader=yaml.FullLoader)
-    titleDict = cfgTitle['title']
     if category:
         keyTitleDict = category
     elif subcategory:
@@ -95,6 +100,7 @@ def return_Rss_File(passkey, apiAction):
     lastBuildDate.text = time_string
     link = et.SubElement(channel, "link")
     link.text = "https://sharewood.tv"
+    apiData = get_Json_Api(arguments, url)
     for torrent in apiData:
         channel.append(et.Comment("News Torrents Item"))
         item = et.SubElement(channel, "item")
