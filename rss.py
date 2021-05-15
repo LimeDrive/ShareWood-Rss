@@ -26,8 +26,14 @@ app = Flask(__name__)
 def get_Json_Api(arguments, url):
     response = requests.get(url, params=arguments)
     if not response.ok:
-        return ValueError
-    return response.json()
+        raise ValueError
+    apiData = response.json()
+    try:
+        _ = iter(apiData)
+    except TypeError as te:
+        print(str(url) + "::::::::::" + str(te))
+        raise TypeError
+    return apiData
 
 
 @app.route('/')
